@@ -1,7 +1,7 @@
 # A-Star-Java-Implementation
 A* also called A Star, algorithm java implementation
 
-This is a java implementation of the A Star algorithm. I couldn't find any good java implementations of this famous AI algorithm in the web so I decided to make my own. 
+This is a java implementation of the A Star algorithm. I couldn't find any good java implementations of this famous AI algorithm on the web so I decided to make my own. 
 
 The implementation includes 3 files:
   - AStar.java : Main algorithm class.
