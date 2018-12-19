@@ -42,7 +42,7 @@ public class AStarTest {
         // 4    -   -   -   -   -   -   -
         // 5    -   -   -   -   -   -   -
 
-        //Expected output with diagonals
+        //Expected output without diagonals
         //Node [row=2, col=1]
         //Node [row=2, col=2]
         //Node [row=1, col=2]
