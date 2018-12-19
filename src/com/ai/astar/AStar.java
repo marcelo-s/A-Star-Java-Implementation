@@ -1,15 +1,12 @@
 package com.ai.astar;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * A Star Algorithm
  *
- * @version 2.0, 2017-02-23
  * @author Marcelo Surriabre
+ * @version 2.1, 2017-02-23
  */
 public class AStar {
     private static int DEFAULT_HV_COST = 10; // Horizontal - Vertical Cost
@@ -18,7 +15,7 @@ public class AStar {
     private int diagonalCost;
     private Node[][] searchArea;
     private PriorityQueue<Node> openList;
-    private List<Node> closedList;
+    private Set<Node> closedSet;
     private Node initialNode;
     private Node finalNode;
 
@@ -31,11 +28,11 @@ public class AStar {
         this.openList = new PriorityQueue<Node>(new Comparator<Node>() {
             @Override
             public int compare(Node node0, Node node1) {
-                return node0.getF() < node1.getF() ? -1 : node0.getF() > node1.getF() ? 1 : 0;
+                return Integer.compare(node0.getF(), node1.getF());
             }
         });
         setNodes();
-        this.closedList = new ArrayList<Node>();
+        this.closedSet = new HashSet<>();
     }
 
     public AStar(int rows, int cols, Node initialNode, Node finalNode) {
@@ -64,7 +61,7 @@ public class AStar {
         openList.add(initialNode);
         while (!isEmpty(openList)) {
             Node currentNode = openList.poll();
-            closedList.add(currentNode);
+            closedSet.add(currentNode);
             if (isFinalNode(currentNode)) {
                 return getPath(currentNode);
             } else {
@@ -135,7 +132,7 @@ public class AStar {
 
     private void checkNode(Node currentNode, int col, int row, int cost) {
         Node adjacentNode = getSearchArea()[row][col];
-        if (!adjacentNode.isBlock() && !getClosedList().contains(adjacentNode)) {
+        if (!adjacentNode.isBlock() && !getClosedSet().contains(adjacentNode)) {
             if (!getOpenList().contains(adjacentNode)) {
                 adjacentNode.setNodeData(currentNode, cost);
                 getOpenList().add(adjacentNode);
@@ -195,12 +192,12 @@ public class AStar {
         this.openList = openList;
     }
 
-    public List<Node> getClosedList() {
-        return closedList;
+    public Set<Node> getClosedSet() {
+        return closedSet;
     }
 
-    public void setClosedList(List<Node> closedList) {
-        this.closedList = closedList;
+    public void setClosedSet(Set<Node> closedSet) {
+        this.closedSet = closedSet;
     }
 
     public int getHvCost() {
