@@ -43,6 +43,9 @@ public class AStar {
         for (int i = 0; i < searchArea.length; i++) {
             for (int j = 0; j < searchArea[0].length; j++) {
                 Node node = new Node(i, j);
+                if(searchArea[i][j].isBlock()) { 
+                    node.setBlock(true); //In case a node was set to block outside of the setBlocks context
+                }
                 node.calculateHeuristic(getFinalNode());
                 this.searchArea[i][j] = node;
             }
