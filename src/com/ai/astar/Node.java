@@ -11,9 +11,9 @@ public class Node {
     private int g;
     private int f;
     private int h;
-    private int row;
-    private int col;
-    private boolean isBlock;
+    private final int row;
+    private final int col;
+    private boolean isBlocked;
     private Node parent;
 
     public Node(int row, int col) {
@@ -23,34 +23,67 @@ public class Node {
     }
 
     public void calculateHeuristic(Node finalNode) {
-        this.h = Math.abs(finalNode.getRow() - getRow()) + Math.abs(finalNode.getCol() - getCol());
+        this.h = Math.abs(finalNode.row() - row) + Math.abs(finalNode.col() - col);
     }
 
     public void setNodeData(Node currentNode, int cost) {
-        int gCost = currentNode.getG() + cost;
-        setParent(currentNode);
-        setG(gCost);
-        calculateFinalCost();
+        int gCost = currentNode.g() + cost;
+        this.parent = currentNode;
+        this.g = gCost;
+        this.f = g + h;
     }
 
     public boolean checkBetterPath(Node currentNode, int cost) {
-        int gCost = currentNode.getG() + cost;
-        if (gCost < getG()) {
+        int gCost = currentNode.g() + cost;
+        if (gCost < g()) {
             setNodeData(currentNode, cost);
             return true;
         }
         return false;
     }
 
-    private void calculateFinalCost() {
-        int finalCost = getG() + getH();
-        setF(finalCost);
+    public int g() {
+        return g;
+    }
+
+    public int f() {
+        return f;
+    }
+
+    public Node parent() {
+        return parent;
+    }
+
+    public boolean isBlocked() {
+        return isBlocked;
+    }
+
+    public void setAsBlocked() {
+        this.isBlocked = true;
+    }
+
+    public int row() {
+        return row;
+    }
+
+    public int col() {
+        return col;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = row;
+        result = 31 * result + col;
+        return result;
     }
 
     @Override
     public boolean equals(Object arg0) {
+        if (arg0 == null) {
+            return false;
+        }
         Node other = (Node) arg0;
-        return this.getRow() == other.getRow() && this.getCol() == other.getCol();
+        return this.row() == other.row() && this.col() == other.col();
     }
 
     @Override
@@ -58,59 +91,4 @@ public class Node {
         return "Node [row=" + row + ", col=" + col + "]";
     }
 
-    public int getH() {
-        return h;
-    }
-
-    public void setH(int h) {
-        this.h = h;
-    }
-
-    public int getG() {
-        return g;
-    }
-
-    public void setG(int g) {
-        this.g = g;
-    }
-
-    public int getF() {
-        return f;
-    }
-
-    public void setF(int f) {
-        this.f = f;
-    }
-
-    public Node getParent() {
-        return parent;
-    }
-
-    public void setParent(Node parent) {
-        this.parent = parent;
-    }
-
-    public boolean isBlock() {
-        return isBlock;
-    }
-
-    public void setBlock(boolean isBlock) {
-        this.isBlock = isBlock;
-    }
-
-    public int getRow() {
-        return row;
-    }
-
-    public void setRow(int row) {
-        this.row = row;
-    }
-
-    public int getCol() {
-        return col;
-    }
-
-    public void setCol(int col) {
-        this.col = col;
-    }
 }
