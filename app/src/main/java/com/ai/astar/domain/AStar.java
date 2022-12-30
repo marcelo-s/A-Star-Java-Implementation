@@ -1,6 +1,5 @@
-package com.ai.astar;
+package com.ai.astar.domain;
 
-import com.ai.astar.domain.Node;
 import com.ai.astar.domain.searchstrategy.DiagonalMapChecker;
 import com.ai.astar.domain.searchstrategy.HorizontalVerticalChecker;
 import com.ai.astar.domain.searchstrategy.MapChecker;
@@ -19,7 +18,15 @@ public class AStar {
     private final MapChecker diagonalsChecker;
     private final MapChecker hvChecker;
 
-    public AStar(int rows, int cols, Node initialNode, Node finalNode, int[][] blocksArray, boolean searchDiagonals) {
+    public AStar(
+            int rows,
+            int cols,
+            Node initialNode,
+            Node finalNode,
+            int[][] blocksArray,
+            boolean searchDiagonals,
+            int diagonalCost,
+            int hvCost) {
         this.initialNode = initialNode;
         this.finalNode = finalNode;
         this.searchArea = new Node[rows][cols];
@@ -28,17 +35,21 @@ public class AStar {
         initBlocks(blocksArray);
         this.closedSet = new HashSet<>();
         if (searchDiagonals) {
-            this.diagonalsChecker = new DiagonalMapChecker(searchArea, openList, closedSet, DEFAULT_DIAGONAL_COST);
+            this.diagonalsChecker = new DiagonalMapChecker(searchArea, openList, closedSet, diagonalCost);
         } else {
             this.diagonalsChecker = new NoOpChecker(null, null, null);
         }
-        this.hvChecker = new HorizontalVerticalChecker(searchArea, openList, closedSet, DEFAULT_HV_COST);
+        this.hvChecker = new HorizontalVerticalChecker(searchArea, openList, closedSet, hvCost);
+    }
+
+    public AStar(int rows, int cols, Node initialNode, Node finalNode, int[][] blocksArray, boolean searchDiagonals) {
+        this(rows, cols, initialNode, finalNode, blocksArray, searchDiagonals, DEFAULT_DIAGONAL_COST, DEFAULT_HV_COST);
     }
 
     private void initNodes() {
         for (int i = 0; i < searchArea.length; i++) {
             for (int j = 0; j < searchArea[0].length; j++) {
-                Node node = new Node(i, j);
+                Node node = Node.of(i, j);
                 node.calculateHeuristic(finalNode);
                 this.searchArea[i][j] = node;
             }
@@ -46,9 +57,9 @@ public class AStar {
     }
 
     private void initBlocks(int[][] blocksArray) {
-        for (int[] ints : blocksArray) {
-            int row = ints[0];
-            int col = ints[1];
+        for (int[] block : blocksArray) {
+            int row = block[0];
+            int col = block[1];
             if (row < 0 || row >= searchArea.length) {
                 continue;
             }

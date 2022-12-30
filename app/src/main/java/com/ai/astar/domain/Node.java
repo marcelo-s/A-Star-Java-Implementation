@@ -10,10 +10,14 @@ public class Node {
     private boolean isBlocked;
     private Node parent;
 
-    public Node(int row, int col) {
+    private Node(int row, int col) {
         super();
         this.row = row;
         this.col = col;
+    }
+
+    public static Node of(int row, int col) {
+        return new Node(row, col);
     }
 
     public void calculateHeuristic(Node finalNode) {
