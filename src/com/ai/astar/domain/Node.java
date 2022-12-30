@@ -1,16 +1,10 @@
-package com.ai.astar;
+package com.ai.astar.domain;
 
-/**
- * Node Class
- *
- * @author Marcelo Surriabre
- * @version 2.0, 2018-02-23
- */
 public class Node {
 
     private int g;
     private int f;
-    private int h;
+    private int heuristic;
     private final int row;
     private final int col;
     private boolean isBlocked;
@@ -23,20 +17,20 @@ public class Node {
     }
 
     public void calculateHeuristic(Node finalNode) {
-        this.h = Math.abs(finalNode.row() - row) + Math.abs(finalNode.col() - col);
+        this.heuristic = Math.abs(finalNode.row() - row) + Math.abs(finalNode.col() - col);
     }
 
-    public void setNodeData(Node currentNode, int cost) {
+    public void updateNode(Node currentNode, int cost) {
         int gCost = currentNode.g() + cost;
         this.parent = currentNode;
         this.g = gCost;
-        this.f = g + h;
+        this.f = g + heuristic;
     }
 
     public boolean checkBetterPath(Node currentNode, int cost) {
         int gCost = currentNode.g() + cost;
         if (gCost < g()) {
-            setNodeData(currentNode, cost);
+            updateNode(currentNode, cost);
             return true;
         }
         return false;

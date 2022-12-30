@@ -1,37 +1,38 @@
 package com.ai.astar;
 
+import com.ai.astar.domain.Node;
+import com.ai.astar.domain.searchstrategy.DiagonalMapChecker;
+import com.ai.astar.domain.searchstrategy.HorizontalVerticalChecker;
+import com.ai.astar.domain.searchstrategy.MapChecker;
+import com.ai.astar.domain.searchstrategy.NoOpChecker;
+
 import java.util.*;
 
-/**
- * A Star Algorithm
- *
- * @author Marcelo Surriabre
- * @version 2.1, 2017-02-23
- */
 public class AStar {
     private static final int DEFAULT_HV_COST = 10; // Horizontal - Vertical Cost
     private static final int DEFAULT_DIAGONAL_COST = 14;
-    private final int hvCost;
-    private final int diagonalCost;
     private final Node[][] searchArea;
     private final PriorityQueue<Node> openList;
     private final Set<Node> closedSet;
     private final Node initialNode;
     private final Node finalNode;
+    private final MapChecker diagonalsChecker;
+    private final MapChecker hvChecker;
 
-    public AStar(int rows, int cols, Node initialNode, Node finalNode, int hvCost, int diagonalCost) {
-        this.hvCost = hvCost;
-        this.diagonalCost = diagonalCost;
+    public AStar(int rows, int cols, Node initialNode, Node finalNode, int[][] blocksArray, boolean searchDiagonals) {
         this.initialNode = initialNode;
         this.finalNode = finalNode;
         this.searchArea = new Node[rows][cols];
         this.openList = new PriorityQueue<>(Comparator.comparingInt(Node::f));
         initNodes();
+        initBlocks(blocksArray);
         this.closedSet = new HashSet<>();
-    }
-
-    public AStar(int rows, int cols, Node initialNode, Node finalNode) {
-        this(rows, cols, initialNode, finalNode, DEFAULT_HV_COST, DEFAULT_DIAGONAL_COST);
+        if (searchDiagonals) {
+            this.diagonalsChecker = new DiagonalMapChecker(searchArea, openList, closedSet, DEFAULT_DIAGONAL_COST);
+        } else {
+            this.diagonalsChecker = new NoOpChecker(null, null, null);
+        }
+        this.hvChecker = new HorizontalVerticalChecker(searchArea, openList, closedSet, DEFAULT_HV_COST);
     }
 
     private void initNodes() {
@@ -44,10 +45,16 @@ public class AStar {
         }
     }
 
-    public void initBlocks(int[][] blocksArray) {
+    private void initBlocks(int[][] blocksArray) {
         for (int[] ints : blocksArray) {
             int row = ints[0];
             int col = ints[1];
+            if (row < 0 || row >= searchArea.length) {
+                continue;
+            }
+            if (col < 0 || col >= searchArea[0].length) {
+                continue;
+            }
             this.searchArea[row][col].setAsBlocked();
         }
     }
@@ -58,7 +65,7 @@ public class AStar {
             Node currentNode = openList.poll();
             closedSet.add(currentNode);
             if (isFinalNode(currentNode)) {
-                return generatePath(currentNode);
+                return bestPath(currentNode);
             } else {
                 addAdjacentNodes(currentNode);
             }
@@ -66,7 +73,7 @@ public class AStar {
         return new ArrayList<>();
     }
 
-    private List<Node> generatePath(Node currentNode) {
+    private List<Node> bestPath(Node currentNode) {
         List<Node> path = new ArrayList<>();
         path.add(currentNode);
         Node parent;
@@ -78,71 +85,26 @@ public class AStar {
     }
 
     private void addAdjacentNodes(Node currentNode) {
-        addAdjacentUpperRow(currentNode);
-        addAdjacentMiddleRow(currentNode);
-        addAdjacentLowerRow(currentNode);
-    }
-
-    private void addAdjacentLowerRow(Node currentNode) {
         int row = currentNode.row();
         int col = currentNode.col();
-        int lowerRow = row + 1;
-        if (lowerRow >= searchArea.length) {
-            return;
-        }
-        if (col - 1 >= 0) {
-            checkNode(currentNode, col - 1, lowerRow, diagonalCost); // Comment this line if diagonal movements are not allowed
-        }
-        if (col + 1 < searchArea[0].length) {
-            checkNode(currentNode, col + 1, lowerRow, diagonalCost); // Comment this line if diagonal movements are not allowed
-        }
-        checkNode(currentNode, col, lowerRow, hvCost);
+        addAdjacentUpperRow(currentNode, row, col);
+        addAdjacentMiddleRow(currentNode, row, col);
+        addAdjacentLowerRow(currentNode, row, col);
     }
 
-    private void addAdjacentMiddleRow(Node currentNode) {
-        int row = currentNode.row();
-        int col = currentNode.col();
-        if (col - 1 >= 0) {
-            checkNode(currentNode, col - 1, row, hvCost);
-        }
-        if (col + 1 < searchArea[0].length) {
-            checkNode(currentNode, col + 1, row, hvCost);
-        }
+    private void addAdjacentLowerRow(Node currentNode, int row, int col) {
+        diagonalsChecker.checkNode(currentNode, col, row + 1);
+        hvChecker.checkNode(currentNode, col, row + 1);
     }
 
-    private void addAdjacentUpperRow(Node currentNode) {
-        int row = currentNode.row();
-        int col = currentNode.col();
-        int upperRow = row - 1;
-        if (upperRow < 0) {
-            return;
-        }
-        if (col - 1 >= 0) {
-            checkNode(currentNode, col - 1, upperRow, diagonalCost); // Comment this if diagonal movements are not allowed
-        }
-        if (col + 1 < searchArea[0].length) {
-            checkNode(currentNode, col + 1, upperRow, diagonalCost); // Comment this if diagonal movements are not allowed
-        }
-        checkNode(currentNode, col, upperRow, hvCost);
+    private void addAdjacentMiddleRow(Node currentNode, int row, int col) {
+        hvChecker.checkNode(currentNode, col - 1, row);
+        hvChecker.checkNode(currentNode, col + 1, row);
     }
 
-    private void checkNode(Node currentNode, int col, int row, int cost) {
-        Node adjacentNode = searchArea[row][col];
-        if (adjacentNode.isBlocked() || closedSet.contains(adjacentNode)) {
-            return;
-        }
-        if (!openList.contains(adjacentNode)) {
-            adjacentNode.setNodeData(currentNode, cost);
-            openList.add(adjacentNode);
-        } else {
-            boolean changed = adjacentNode.checkBetterPath(currentNode, cost);
-            if (changed) {
-                // Remove and Add the changed node, so that the PriorityQueue can sort again its
-                // contents with the modified "finalCost" value of the modified node
-                openList.remove(adjacentNode);
-                openList.add(adjacentNode);
-            }
-        }
+    private void addAdjacentUpperRow(Node currentNode, int row, int col) {
+        diagonalsChecker.checkNode(currentNode, col, row - 1);
+        hvChecker.checkNode(currentNode, col, row - 1);
     }
 
     private boolean isFinalNode(Node currentNode) {

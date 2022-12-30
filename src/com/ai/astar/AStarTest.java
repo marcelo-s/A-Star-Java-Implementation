@@ -1,5 +1,7 @@
 package com.ai.astar;
 
+import com.ai.astar.domain.Node;
+
 import java.util.List;
 
 public class AStarTest {
@@ -9,9 +11,8 @@ public class AStarTest {
         Node finalNode = new Node(2, 5);
         int rows = 6;
         int cols = 7;
-        AStar aStar = new AStar(rows, cols, initialNode, finalNode);
         int[][] blocksArray = new int[][]{{1, 3}, {2, 3}, {3, 3}};
-        aStar.initBlocks(blocksArray);
+        AStar aStar = new AStar(rows, cols, initialNode, finalNode, blocksArray, false);
         List<Node> path = aStar.findPath();
         for (Node node : path) {
             System.out.println(node);
