@@ -18,7 +18,7 @@ public abstract class MapChecker implements MapCheck {
         this.columns = searchArea == null ? 0 : searchArea[0].length;
     }
 
-    void check(Node currentNode, int col, int row, int cost) {
+    protected void check(Node currentNode, int col, int row, int cost) {
         if (row < 0 || row >= searchArea.length) {
             return;
         }

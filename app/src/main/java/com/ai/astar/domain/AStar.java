@@ -1,14 +1,14 @@
 package com.ai.astar.domain;
 
 import com.ai.astar.domain.searchstrategy.DiagonalMapChecker;
-import com.ai.astar.domain.searchstrategy.HorizontalVerticalChecker;
+import com.ai.astar.domain.searchstrategy.ManhattanMapChecker;
 import com.ai.astar.domain.searchstrategy.MapChecker;
 import com.ai.astar.domain.searchstrategy.NoOpChecker;
 
 import java.util.*;
 
 public class AStar {
-    private static final int DEFAULT_HV_COST = 10; // Horizontal - Vertical Cost
+    private static final int DEFAULT_MANHATTAN_COST = 10;
     private static final int DEFAULT_DIAGONAL_COST = 14;
     private final Node[][] searchArea;
     private final PriorityQueue<Node> openList;
@@ -16,7 +16,7 @@ public class AStar {
     private final Node initialNode;
     private final Node finalNode;
     private final MapChecker diagonalsChecker;
-    private final MapChecker hvChecker;
+    private final MapChecker manhattanChecker;
 
     public AStar(
             int rows,
@@ -30,7 +30,7 @@ public class AStar {
         this.initialNode = initialNode;
         this.finalNode = finalNode;
         this.searchArea = new Node[rows][cols];
-        this.openList = new PriorityQueue<>(Comparator.comparingInt(Node::f));
+        this.openList = new PriorityQueue<>(Comparator.comparingInt(Node::fScore));
         initNodes();
         initBlocks(blocksArray);
         this.closedSet = new HashSet<>();
@@ -39,11 +39,11 @@ public class AStar {
         } else {
             this.diagonalsChecker = new NoOpChecker(null, null, null);
         }
-        this.hvChecker = new HorizontalVerticalChecker(searchArea, openList, closedSet, hvCost);
+        this.manhattanChecker = new ManhattanMapChecker(searchArea, openList, closedSet, hvCost);
     }
 
     public AStar(int rows, int cols, Node initialNode, Node finalNode, int[][] blocksArray, boolean searchDiagonals) {
-        this(rows, cols, initialNode, finalNode, blocksArray, searchDiagonals, DEFAULT_DIAGONAL_COST, DEFAULT_HV_COST);
+        this(rows, cols, initialNode, finalNode, blocksArray, searchDiagonals, DEFAULT_DIAGONAL_COST, DEFAULT_MANHATTAN_COST);
     }
 
     private void initNodes() {
@@ -105,17 +105,17 @@ public class AStar {
 
     private void addAdjacentLowerRow(Node currentNode, int row, int col) {
         diagonalsChecker.checkNode(currentNode, col, row + 1);
-        hvChecker.checkNode(currentNode, col, row + 1);
+        manhattanChecker.checkNode(currentNode, col, row + 1);
     }
 
     private void addAdjacentMiddleRow(Node currentNode, int row, int col) {
-        hvChecker.checkNode(currentNode, col - 1, row);
-        hvChecker.checkNode(currentNode, col + 1, row);
+        manhattanChecker.checkNode(currentNode, col - 1, row);
+        manhattanChecker.checkNode(currentNode, col + 1, row);
     }
 
     private void addAdjacentUpperRow(Node currentNode, int row, int col) {
         diagonalsChecker.checkNode(currentNode, col, row - 1);
-        hvChecker.checkNode(currentNode, col, row - 1);
+        manhattanChecker.checkNode(currentNode, col, row - 1);
     }
 
     private boolean isFinalNode(Node currentNode) {

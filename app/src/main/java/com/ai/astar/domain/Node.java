@@ -2,9 +2,9 @@ package com.ai.astar.domain;
 
 public class Node {
 
-    private int g;
-    private int f;
-    private int heuristic;
+    private int gScore;
+    private int fScore;
+    private int h;
     private final int row;
     private final int col;
     private boolean isBlocked;
@@ -21,31 +21,38 @@ public class Node {
     }
 
     public void calculateHeuristic(Node finalNode) {
-        this.heuristic = Math.abs(finalNode.row() - row) + Math.abs(finalNode.col() - col);
+        this.h = Math.abs(finalNode.row() - row) + Math.abs(finalNode.col() - col);
     }
 
     public void updateNode(Node currentNode, int cost) {
-        int gCost = currentNode.g() + cost;
         this.parent = currentNode;
-        this.g = gCost;
-        this.f = g + heuristic;
+        updateGScore(currentNode.gScore(), cost);
+        updateFScore();
     }
 
     public boolean checkBetterPath(Node currentNode, int cost) {
-        int gCost = currentNode.g() + cost;
-        if (gCost < g()) {
+        int updatedScore = currentNode.gScore() + cost;
+        if (updatedScore < gScore()) {
             updateNode(currentNode, cost);
             return true;
         }
         return false;
     }
 
-    public int g() {
-        return g;
+    public int gScore() {
+        return gScore;
     }
 
-    public int f() {
-        return f;
+    private void updateGScore(int currentGScore, int cost) {
+        this.gScore = currentGScore + cost;
+    }
+
+    public int fScore() {
+        return fScore;
+    }
+
+    private void updateFScore() {
+        this.fScore = gScore + h;
     }
 
     public Node parent() {
